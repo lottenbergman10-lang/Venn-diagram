@@ -2,38 +2,54 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var showsDiagram = false
+    @State private var regions = DiagramRegion.initialValues
 
     var body: some View {
         HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 24) {
-                Label("Venn-diagram", systemImage: "circle.hexagongrid.fill")
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(Color.accentColor)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    Label("Venn-diagram", systemImage: "circle.hexagongrid.fill")
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(.black)
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Börja med ett exempel")
-                        .font(.headline)
-                    Text("Visa hur personer med gemensamma intressen hamnar i samma zon.")
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Text i varje område")
+                            .font(.headline)
+                        Text("Använd A–F och K enligt diagrammet. K är mitten där alla tre cirklar möts.")
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    VStack(spacing: 12) {
+                        ForEach($regions) { $region in
+                            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                                Text(region.id)
+                                    .font(.headline.monospaced())
+                                    .frame(width: 18)
+                                TextField("Text för \(region.id)", text: $region.text, axis: .vertical)
+                                    .textFieldStyle(.roundedBorder)
+                                    .lineLimit(1...3)
+                                    .accessibilityLabel("Område \(region.id), \(region.location)")
+                            }
+                            .help(region.location)
+                        }
+                    }
+
+                    Button {
+                        showsDiagram = true
+                    } label: {
+                        Label("Visa diagram", systemImage: "plus.circle.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .keyboardShortcut(.return, modifiers: [])
                 }
-
-                Button {
-                    showsDiagram = true
-                } label: {
-                    Label("Visa exempeldiagram", systemImage: "plus.circle.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .keyboardShortcut(.return, modifiers: [])
-
-                Spacer()
+                .padding(28)
             }
-            .padding(28)
-            .frame(width: 280)
+            .frame(width: 320)
             .frame(maxHeight: .infinity)
-            .background(Color(red: 0.95, green: 0.96, blue: 0.98))
+            .background(Color(white: 0.96))
 
             Divider()
 
@@ -42,15 +58,13 @@ struct ContentView: View {
                     .font(.largeTitle.weight(.semibold))
 
                 if showsDiagram {
-                    Text("Namn i överlappningen tillhör flera intressen.")
-                        .foregroundStyle(.secondary)
-                    ExampleDiagramView()
+                    VennDiagramView(regions: regions)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ContentUnavailableView {
                         Label("Här visas ditt diagram", systemImage: "chart.pie")
                     } description: {
-                        Text("Klicka på Visa exempeldiagram för att börja.")
+                        Text("Fyll i områdena och klicka på Visa diagram.")
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -61,5 +75,6 @@ struct ContentView: View {
         }
         .frame(minWidth: 950, minHeight: 680)
         .preferredColorScheme(.light)
+        .tint(.black)
     }
 }
